@@ -151,21 +151,25 @@ any EvalVisitor::visitExpr_stmt(Python3Parser::Expr_stmtContext *ctx){
 any EvalVisitor::visitTest(Python3Parser::TestContext *ctx){ return visit(ctx->or_test()); }
 
 any EvalVisitor::visitOr_test(Python3Parser::Or_testContext *ctx){
-    bool result = false;
+    Value res = makeBool(false);
     for (size_t i=0;i<ctx->and_test().size();++i){
         Value v = any_cast<Value>(visit(ctx->and_test(i)));
-        if (toBool(v)) { result = true; break; }
+        if (i==0) res = v;
+        if (toBool(res)) return res;
+        res = v;
     }
-    return makeBool(result);
+    return res;
 }
 
 any EvalVisitor::visitAnd_test(Python3Parser::And_testContext *ctx){
-    bool result = true;
+    Value res = makeBool(true);
     for (size_t i=0;i<ctx->not_test().size();++i){
         Value v = any_cast<Value>(visit(ctx->not_test(i)));
-        if (!toBool(v)) { result = false; break; }
+        if (i==0) res = v;
+        if (!toBool(res)) return res;
+        res = v;
     }
-    return makeBool(result);
+    return res;
 }
 
 any EvalVisitor::visitNot_test(Python3Parser::Not_testContext *ctx){
